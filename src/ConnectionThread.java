@@ -3,16 +3,7 @@ import java.io.*;
 import java.net.*;
 
 public class ConnectionThread extends Thread{
-	
-	
-	
-	
-	//obj to hold socket, client id
-	
-	//run
-	//send to client outputstream
-	//receive from client inputstream
-	
+
 	private Socket socket;
 	private int ClientId;
 	ObjectInputStream in;

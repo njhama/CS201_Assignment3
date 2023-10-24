@@ -1,30 +1,64 @@
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
 
-class ClientHandler implements Runnable {
+public class Client {
+    
+    private Socket socket;
+    private ObjectInputStream input;
+    private ObjectOutputStream output;
 
-    private Socket clientSocket;
-
-    public ClientHandler(Socket clientSocket) {
-        this.clientSocket = clientSocket;
+    public static void main(String[] args) {
+        Client client = new Client();
+        client.run();
     }
 
-    @Override
     public void run() {
-        // Handle communication with the client, process orders, etc.
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Welcome to the program!");
+        System.out.print("Enter the server hostname: ");
+        String hostname = scanner.nextLine();
+        System.out.print("Enter the server port: ");
+        int port = scanner.nextInt();
+        scanner.nextLine();  // Consume the newline
+
         try {
-            // Example: read a message from the client and print it to the console
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String message = in.readLine();
-            System.out.println("Received message: " + message);
+            socket = new Socket(hostname, port);
+            output = new ObjectOutputStream(socket.getOutputStream());
+            output.flush();
+            input = new ObjectInputStream(socket.getInputStream());
+
+            // Assume the server sends the number of remaining drivers needed as the first message
+            int remainingDrivers = (int) input.readObject();
+            System.out.println(remainingDrivers + " more drivers are needed before the service can begin.");
+
+            // Wait for the dispatch signal from the server (assuming it's a string message "DISPATCH")
+            String dispatchSignal = (String) input.readObject();
+            if ("DISPATCH".equals(dispatchSignal)) {
+                // Handle the order dispatch and delivery
+                // ...
+            }
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            System.err.println("Failed to connect to server. :(");
+        } finally {
+            closeResources();
+        }
+    }
+
+    private void closeResources() {
+        try {
+            if (input != null) input.close();
+            if (output != null) output.close();
+            if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
+
+
+
+//there is no definite sequence of read and writes
+//should i have a unique identifier forteh object sends to handle?
