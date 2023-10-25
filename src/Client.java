@@ -27,19 +27,10 @@ public class Client {
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(socket.getInputStream());
+            //get from teh server
+            
 
-            // Assume the server sends the number of remaining drivers needed as the first message
-            int remainingDrivers = (int) input.readObject();
-            System.out.println(remainingDrivers + " more drivers are needed before the service can begin.");
-
-            // Wait for the dispatch signal from the server (assuming it's a string message "DISPATCH")
-            String dispatchSignal = (String) input.readObject();
-            if ("DISPATCH".equals(dispatchSignal)) {
-                // Handle the order dispatch and delivery
-                // ...
-            }
-
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Failed to connect to server. :(");
         } finally {

@@ -88,9 +88,15 @@ public class Server {
                 myConnections.add(newConnect);
                 //create a new connecetionthread
                 //migt have to handle teh rquest
-                System.out.println(myConnections.size());
-                if (myConnections.size() == 1) {
+                //System.out.println(myConnections.size());
+                System.out.println("Connection from " + clientSocket.getInetAddress());
+                if (myConnections.size() == numDrivers) {
+                	
+                	System.out.println("Starting service");
                 	break;
+                }
+                else {
+                	System.out.println("Waiting for " + String.valueOf(numDrivers - myConnections.size()) + " more driver(s)...");
                 }
             }
             
@@ -102,14 +108,11 @@ public class Server {
         
         
         //hanlde logic
-        for (ConnectionThread it : myConnections) {
-        	System.out.println("here");
-        	
-        }
+        
         
         
         while (true) {
-        	//
+        	//send something to the drivers so thhey can start
         }
     }
 
