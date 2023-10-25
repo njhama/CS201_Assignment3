@@ -10,12 +10,8 @@ public class YelpAPI {
 
     public static String[] getRestaurantCoordinates(String restaurantName) throws Exception {
         String[] coordinates = new String[2]; // [latitude, longitude]
-
-        // Create a connection
         URL url = new URL(BASE_URL + restaurantName + "&location=Los+Angeles");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        
-        // Set up the headers
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "Bearer " + API_KEY);
 

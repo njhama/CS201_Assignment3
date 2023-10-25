@@ -88,6 +88,7 @@ public class Server {
                 myConnections.add(newConnect);
                 //create a new connecetionthread
                 //migt have to handle teh rquest
+                System.out.println(myConnections.size());
                 if (myConnections.size() == 1) {
                 	break;
                 }
@@ -103,6 +104,12 @@ public class Server {
         //hanlde logic
         for (ConnectionThread it : myConnections) {
         	System.out.println("here");
+        	
+        }
+        
+        
+        while (true) {
+        	//
         }
     }
 
