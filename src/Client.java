@@ -24,9 +24,9 @@ public class Client {
 
         try {
             socket = new Socket(hostname, port);
-            //output = new ObjectOutputStream(socket.getOutputStream());
-            //output.flush();
-            //input = new ObjectInputStream(socket.getInputStream());
+            output = new ObjectOutputStream(socket.getOutputStream());
+            output.flush();
+            input = new ObjectInputStream(socket.getInputStream());
 
            
 
