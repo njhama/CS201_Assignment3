@@ -106,6 +106,8 @@ public class Server {
         }
     }
 
+    
+    //close everything
     public void shutdown() {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
