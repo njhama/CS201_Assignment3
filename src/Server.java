@@ -1,7 +1,11 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,10 +15,33 @@ public class Server {
     private static final int PORT = 3456;
     private ServerSocket serverSocket;
     private ExecutorService executorService;
-
+    private List<ConnectionThread> myConnections = new ArrayList<>();;
+    private int ClientId = 0;
+    
     public static void main(String[] args) {
+    	
         Server server = new Server();
         server.start();
+    }
+    
+    private static List<Order> readOrders(String filename) {
+		//“write a function to read in this csv file....(15 lines) ChatGPT, 27 Sep. version, OpenAI, 27 Sep. 2023, chat.openai.com/chat.
+        List<Order> orders = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] orderData = line.split(",");
+                int readyTime = Integer.parseInt(orderData[0].trim());
+                String restaurant = orderData[1].trim();
+                String foodItem = orderData[2].trim();
+                Order myOrder = new Order(readyTime, restaurant, foodItem);
+                orders.add(myOrder);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return orders;
     }
 
     
@@ -41,8 +68,10 @@ public class Server {
     	int numDrivers = scanner.nextInt();
     	
     	//read thru the file
-    	
-    	
+    	List<Order> myOrders = readOrders(fileName);
+    	for (Order it : myOrders) {
+    		System.out.println(it.getReadyTime());
+    	}
     	
     	
         try {
@@ -54,14 +83,26 @@ public class Server {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                Client clientHandler = new Client();
-                executorService.execute((Runnable) clientHandler);  // Handle client connection in a separate thread
+                ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId);
+                ClientId += 1;
+                myConnections.add(newConnect);
+                //create a new connecetionthread
+                //migt have to handle teh rquest
+                if (myConnections.size() == 1) {
+                	break;
+                }
             }
             
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            shutdown();
+            //shutdown();
+        }
+        
+        
+        //hanlde logic
+        for (ConnectionThread it : myConnections) {
+        	System.out.println("here");
         }
     }
 

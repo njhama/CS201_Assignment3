@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
-
+//doo i have to close stuff at the end?
 public class Client {
     
     private Socket socket;
@@ -24,22 +24,13 @@ public class Client {
 
         try {
             socket = new Socket(hostname, port);
-            output = new ObjectOutputStream(socket.getOutputStream());
-            output.flush();
-            input = new ObjectInputStream(socket.getInputStream());
+            //output = new ObjectOutputStream(socket.getOutputStream());
+            //output.flush();
+            //input = new ObjectInputStream(socket.getInputStream());
 
-            // Assume the server sends the number of remaining drivers needed as the first message
-            int remainingDrivers = (int) input.readObject();
-            System.out.println(remainingDrivers + " more drivers are needed before the service can begin.");
+           
 
-            // Wait for the dispatch signal from the server (assuming it's a string message "DISPATCH")
-            String dispatchSignal = (String) input.readObject();
-            if ("DISPATCH".equals(dispatchSignal)) {
-                // Handle the order dispatch and delivery
-                // ...
-            }
-
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Failed to connect to server. :(");
         } finally {
