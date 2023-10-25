@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -25,28 +26,26 @@ public class Server {
     
     
     public void start() {
+    	
+    	//USER INPUT STUFFS
     	Scanner scanner = new Scanner(System.in);
     	System.out.println("What is the name of the schedule file?");
     	String fileName = scanner.nextLine();
     	
-    	//lat and long
     	System.out.println("What is your latitude?");
     	Double myLat = scanner.nextDouble();
     	System.out.println("What is your longitude?");
     	Double myLong = scanner.nextDouble();
     	
-    	//drivers
     	System.out.println("How many drivers will be in service today?");
     	int numDrivers = scanner.nextInt();
     	
-    	
         try {
-        	
-        	
-        	
             serverSocket = new ServerSocket(PORT);
             executorService = Executors.newFixedThreadPool(10);  // Adjust the thread pool size as needed
             System.out.println("Server listening on port " + PORT);
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            System.out.println("Host Name: " + inetAddress.getHostName());
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
