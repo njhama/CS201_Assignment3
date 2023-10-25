@@ -40,6 +40,11 @@ public class Server {
     	System.out.println("How many drivers will be in service today?");
     	int numDrivers = scanner.nextInt();
     	
+    	//read thru the file
+    	
+    	
+    	
+    	
         try {
             serverSocket = new ServerSocket(PORT);
             executorService = Executors.newFixedThreadPool(10);  // Adjust the thread pool size as needed
