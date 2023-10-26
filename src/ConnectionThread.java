@@ -17,8 +17,10 @@ public class ConnectionThread extends Thread{
 	
 	public void run() {
 		try {
-			in = new ObjectInputStream(socket.getInputStream());
+			System.out.println("test");
 			out = new ObjectOutputStream(socket.getOutputStream());
+			out.flush();
+			in = new ObjectInputStream(socket.getInputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -28,12 +30,22 @@ public class ConnectionThread extends Thread{
 		
 	}
 	
-	 public void sendMessage(String message) {
+	 public void sendMessage(Message message) {
 	        try {
 	            if (out != null) {
 	                out.writeObject(message);
 	                out.flush();  
+	                System.out.println("sent");
+	            } 
+	            else {
+	            	//jank
+	            	out = new ObjectOutputStream(socket.getOutputStream());
+	    			out.flush();
+	    			out.writeObject(message);
+	                out.flush();  
+	                System.out.println("sent");
 	            }
+	            
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }

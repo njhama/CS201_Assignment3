@@ -86,6 +86,7 @@ public class Server {
                 ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId);
                 ClientId += 1;
                 myConnections.add(newConnect);
+                newConnect.start();
                 //create a new connecetionthread
                 //migt have to handle teh rquest
                 //System.out.println(myConnections.size());
@@ -96,6 +97,15 @@ public class Server {
                 	break;
                 }
                 else {
+                	
+                	//tell the client that you need some nhmber of poeple left
+                	System.out.println("sending");
+                	Message myMSg = new Message("sfsdf", "teset");
+                	String test = "hello";
+                	for (ConnectionThread it: myConnections) {
+                		it.sendMessage(myMSg);
+                	}
+                	//use a message object
                 	System.out.println("Waiting for " + String.valueOf(numDrivers - myConnections.size()) + " more driver(s)...");
                 }
             }
