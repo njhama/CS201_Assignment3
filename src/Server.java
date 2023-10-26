@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,7 +19,7 @@ public class Server {
     private List<ConnectionThread> myConnections = new ArrayList<>();;
     private int ClientId = 0;
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
     	
         Server server = new Server();
         server.start();
@@ -52,7 +53,7 @@ public class Server {
     
     
     
-    public void start() {
+    public void start() throws InterruptedException {
     	
     	//USER INPUT STUFFS
     	Scanner scanner = new Scanner(System.in);
@@ -83,10 +84,13 @@ public class Server {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId);
+                CountDownLatch latch = new CountDownLatch(1);  // Create a new latch for each connection
+                ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId, latch);
                 ClientId += 1;
-                myConnections.add(newConnect);
                 newConnect.start();
+                latch.await();
+                myConnections.add(newConnect);
+                
                 //create a new connecetionthread
                 //migt have to handle teh rquest
                 //System.out.println(myConnections.size());
@@ -118,7 +122,10 @@ public class Server {
         
         
         //hanlde logic
-        
+        Message myMSg = new Message("sfsdf", "teset");
+        for (ConnectionThread it: myConnections) {
+    		it.sendMessage(myMSg);
+    	}
         
         
         while (true) {
