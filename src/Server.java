@@ -58,16 +58,22 @@ public class Server {
     	//USER INPUT STUFFS
     	Scanner scanner = new Scanner(System.in);
     	System.out.println("What is the name of the schedule file?");
-    	String fileName = scanner.nextLine();
+    	//String fileName = scanner.nextLine();
+    	
+    	//temp
+    	String fileName = "schedule.csv";
+    	Double myLat = 1.0;
+    	Double myLong = 1.0;
+    	
     	
     	System.out.println("What is your latitude?");
-    	Double myLat = scanner.nextDouble();
+    	//Double myLat = scanner.nextDouble();
     	System.out.println("What is your longitude?");
-    	Double myLong = scanner.nextDouble();
+    	//Double myLong = scanner.nextDouble();
     	
     	System.out.println("How many drivers will be in service today?");
-    	int numDrivers = scanner.nextInt();
-    	
+    	//int numDrivers = scanner.nextInt();
+    	int numDrivers = 3;
     	//read thru the file
     	List<Order> myOrders = readOrders(fileName);
     	for (Order it : myOrders) {
@@ -96,7 +102,7 @@ public class Server {
                 
                 if (myConnections.size() == numDrivers) {
                 	System.out.println("Starting service");
-                	Message startMsg = new Message("Service Starting", "All drivers are connected. Service is now starting.");
+                	Message startMsg = new Message("FROM SERVER: Service Starting", "All drivers are connected. Service is now starting.");
                     for (ConnectionThread it : myConnections) {
                         it.sendMessage(startMsg);
                     }
@@ -104,9 +110,14 @@ public class Server {
                 }
                 else {
                 	int remainingDrivers = numDrivers - myConnections.size();
-                    Message waitMsg = new Message("Awaiting More Drivers", "Waiting for " + remainingDrivers + " more driver(s) to start the service.");
-                    ConnectionThread latestConnection = myConnections.get(myConnections.size() - 1);
-                    latestConnection.sendMessage(waitMsg);
+                    Message waitMsg = new Message("Awaiting More Drivers", remainingDrivers + " more driver is\r\n"
+                    		+ "needed before the\r\n"
+                    		+ "service can begin.\r\n"
+                    		+ "Waiting...\r\n"
+                    		+ "");
+                    for (ConnectionThread it : myConnections) {
+                        it.sendMessage(waitMsg);
+                    }
                 	System.out.println("Waiting for " + String.valueOf(numDrivers - myConnections.size()) + " more driver(s)...");
                 }
             }
@@ -116,15 +127,8 @@ public class Server {
         } finally {
             //shutdown();
         }
-        
-        
-        //hanlde logic
-        Message myMSg = new Message("sfsdf", "teset");
-        for (ConnectionThread it: myConnections) {
-    		it.sendMessage(myMSg);
-    	}
-        
-        
+      
+    
         while (true) {
         	//send something to the drivers so thhey can start
         }

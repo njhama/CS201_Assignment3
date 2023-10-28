@@ -17,27 +17,23 @@ public class Client {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to the program!");
         System.out.print("Enter the server hostname: ");
-        String hostname = scanner.nextLine();
+        //String hostname = scanner.nextLine();
+        String hostname = "localhost";
         System.out.print("Enter the server port: ");
-        int port = scanner.nextInt();
+        //int port = scanner.nextInt();
+        int port = 3456;
         //scanner.nextLine();  // Consume the newline
 
         try {
-        	System.out.println("jere");
             socket = new Socket(hostname, port);
-            System.out.println("jere1");
             output = new ObjectOutputStream(socket.getOutputStream());
-            System.out.println("jere2");
             output.flush();
-            System.out.println("jere3");
             input = new ObjectInputStream(socket.getInputStream());
-            System.out.println("jere4");
-            //get from teh server
             System.out.println("Connected to server: " + socket.getRemoteSocketAddress());
             
             while (true) {
             	Message test = (Message) input.readObject();
-                System.out.println(test.getType());
+                System.out.println(test.getPayload());
                 
             }
             

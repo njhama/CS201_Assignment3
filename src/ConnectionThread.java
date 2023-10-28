@@ -10,7 +10,7 @@ public class ConnectionThread extends Thread{
     private int ClientId;
     ObjectInputStream in;
     ObjectOutputStream out;
-
+    private final CountDownLatch latch = new CountDownLatch(1);
 
     public ConnectionThread(Socket socket, int ClientID) {
         this.socket = socket;
@@ -25,6 +25,7 @@ public class ConnectionThread extends Thread{
         	out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in = new ObjectInputStream(socket.getInputStream());
+            latch.countDown();
             while (true) {
                 Message receivedMessage = (Message) in.readObject();
                 // Process the received message if necessary...
@@ -42,15 +43,16 @@ public class ConnectionThread extends Thread{
         }
     }
 
-    public void sendMessage(Message message) {
+    public void sendMessage(Message message) throws InterruptedException {
         try {
+        	latch.await();
             if (out != null) {
                 out.writeObject(message);
                 out.flush();  
-                System.out.println("Message Sent To Client");
+                System.out.println("Message Sent To Client " + ClientId);
             } else {
                 //jank
-                System.out.println("Something went extraordinarily wrong");
+                System.out.println("Something went extraordinarily wrong from client " + ClientId );
             }
         } catch (IOException e) {
             e.printStackTrace();
