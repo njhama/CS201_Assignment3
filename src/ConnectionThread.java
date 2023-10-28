@@ -10,28 +10,35 @@ public class ConnectionThread extends Thread{
     private int ClientId;
     ObjectInputStream in;
     ObjectOutputStream out;
-    private final CountDownLatch latch;
 
-    public ConnectionThread(Socket socket, int ClientID, CountDownLatch latch) {
+
+    public ConnectionThread(Socket socket, int ClientID) {
         this.socket = socket;
         this.ClientId = ClientID;
-        this.latch = latch;
+
     }
 
+    @Override
     public void run() {
         try {
             //System.out.println("test");
-            out = new ObjectOutputStream(socket.getOutputStream());
+        	out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in = new ObjectInputStream(socket.getInputStream());
+            while (true) {
+                Message receivedMessage = (Message) in.readObject();
+                // Process the received message if necessary...
+                // For now, we're just printing it
+                System.out.println("Received from Client " + ClientId + ": " + receivedMessage);
+            }
+            
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            latch.countDown();  // Signal that initialization is complete
-        }
-
-        while (true) {
-            // ... your existing code ...
+        } catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+              // Signal that initialization is complete
         }
     }
 
@@ -40,10 +47,10 @@ public class ConnectionThread extends Thread{
             if (out != null) {
                 out.writeObject(message);
                 out.flush();  
-                System.out.println("sent");
+                System.out.println("Message Sent To Client");
             } else {
                 //jank
-                System.out.println("not sent 1");
+                System.out.println("Something went extraordinarily wrong");
             }
         } catch (IOException e) {
             e.printStackTrace();

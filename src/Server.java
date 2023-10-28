@@ -84,32 +84,29 @@ public class Server {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                CountDownLatch latch = new CountDownLatch(1);  // Create a new latch for each connection
-                ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId, latch);
+                //CountDownLatch latch = new CountDownLatch(1);  // Create a new latch for each connection
+                ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId);
                 ClientId += 1;
                 newConnect.start();
-                latch.await();
                 myConnections.add(newConnect);
                 
-                //create a new connecetionthread
-                //migt have to handle teh rquest
-                //System.out.println(myConnections.size());
+
                 System.out.println("Connection from " + clientSocket.getInetAddress());
+                
+                
                 if (myConnections.size() == numDrivers) {
-                	
                 	System.out.println("Starting service");
+                	Message startMsg = new Message("Service Starting", "All drivers are connected. Service is now starting.");
+                    for (ConnectionThread it : myConnections) {
+                        it.sendMessage(startMsg);
+                    }
                 	break;
                 }
                 else {
-                	
-                	//tell the client that you need some nhmber of poeple left
-                	System.out.println("sending");
-                	Message myMSg = new Message("sfsdf", "teset");
-                	String test = "hello";
-                	for (ConnectionThread it: myConnections) {
-                		it.sendMessage(myMSg);
-                	}
-                	//use a message object
+                	int remainingDrivers = numDrivers - myConnections.size();
+                    Message waitMsg = new Message("Awaiting More Drivers", "Waiting for " + remainingDrivers + " more driver(s) to start the service.");
+                    ConnectionThread latestConnection = myConnections.get(myConnections.size() - 1);
+                    latestConnection.sendMessage(waitMsg);
                 	System.out.println("Waiting for " + String.valueOf(numDrivers - myConnections.size()) + " more driver(s)...");
                 }
             }
