@@ -34,9 +34,10 @@ public class Client {
             
             while (true) {
             	Message test = (Message) input.readObject();
+            	System.out.println("WE GOT AN ORDER FROM111 " + test.getType());
                 System.out.println(test.getPayload());
                 if (test.getType() == "order") {
-                	
+                	System.out.println("WE GOT AN ORDER FROM " +  test.getPayload());
                 }
                 
                 

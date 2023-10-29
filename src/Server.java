@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -13,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 public class Server {
 
@@ -79,7 +81,7 @@ public class Server {
     	
     	System.out.println("How many drivers will be in service today?");
     	//int numDrivers = scanner.nextInt();
-    	int numDrivers = 3;
+    	int numDrivers = 1;
     	
     	
     	
@@ -144,7 +146,7 @@ public class Server {
       //init
     	availableDriversSemaphore = new Semaphore(numDrivers);
         availableDriversQueue = new LinkedBlockingQueue<>(myConnections);
-    
+        processOrders(myOrders);
         while (true) {
         	//send something to the drivers so thhey can start
         	//start processing orders
@@ -154,13 +156,43 @@ public class Server {
         	//we have myOrders
         	//start doing the processing
         	
-        	
+        	//should send some sort of lists to 
         	
         	
         	
         }
     }
+    
+    //funtion to handle order proessing
+    private void processOrders(List<Order> orders) {
+        Map<Integer, List<Order>> ordersByReadyTime = orders.stream()
+                .collect(Collectors.groupingBy(Order::getReadyTime));
 
+        for (Map.Entry<Integer, List<Order>> entry : ordersByReadyTime.entrySet()) {
+            int readyTime = entry.getKey();
+            List<Order> readyOrders = entry.getValue();
+
+            try {
+                availableDriversSemaphore.acquire();
+                ConnectionThread driver = availableDriversQueue.take();
+
+                sendOrdersToDriver(readyOrders, driver);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private void sendOrdersToDriver(List<Order> orders, ConnectionThread driver) throws InterruptedException {
+        Message orderMessage = new Message("order", orders);
+        System.out.println("SENDING MESSAGE FROM " + orderMessage.getType());
+        driver.sendMessage(orderMessage);
+        availableDriversQueue.put(driver);  // Put the driver back in the queue when done
+    }
+
+    
+    
+    
     
     //close everything
     public void shutdown() {
