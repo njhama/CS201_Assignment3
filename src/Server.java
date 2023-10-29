@@ -7,9 +7,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 
 public class Server {
 
@@ -18,6 +21,9 @@ public class Server {
     private ExecutorService executorService;
     private List<ConnectionThread> myConnections = new ArrayList<>();;
     private int ClientId = 0;
+    private Semaphore availableDriversSemaphore;
+    private BlockingQueue<ConnectionThread> availableDriversQueue;
+    
     
     public static void main(String[] args) throws InterruptedException {
     	
@@ -74,6 +80,12 @@ public class Server {
     	System.out.println("How many drivers will be in service today?");
     	//int numDrivers = scanner.nextInt();
     	int numDrivers = 3;
+    	
+    	
+    	
+    	
+    	
+    	
     	//read thru the file
     	List<Order> myOrders = readOrders(fileName);
     	for (Order it : myOrders) {
@@ -127,10 +139,25 @@ public class Server {
         } finally {
             //shutdown();
         }
-      
+        
+        
+      //init
+    	availableDriversSemaphore = new Semaphore(numDrivers);
+        availableDriversQueue = new LinkedBlockingQueue<>(myConnections);
     
         while (true) {
         	//send something to the drivers so thhey can start
+        	//start processing orders
+        	
+        	
+        	//send message with payload of min heap of orders, client should do in order
+        	//we have myOrders
+        	//start doing the processing
+        	
+        	
+        	
+        	
+        	
         }
     }
 

@@ -7,6 +7,7 @@ public class Client {
     private Socket socket;
     private ObjectInputStream input;
     private ObjectOutputStream output;
+    private Coordinate currCoords;
 
     public static void main(String[] args) throws ClassNotFoundException {
         Client client = new Client();
@@ -34,6 +35,11 @@ public class Client {
             while (true) {
             	Message test = (Message) input.readObject();
                 System.out.println(test.getPayload());
+                if (test.getType() == "order") {
+                	
+                }
+                
+                
                 
             }
             
@@ -47,7 +53,14 @@ public class Client {
         }
         
     }
-
+    
+    //calc how long to sleep for
+    public double calcDistance() {
+    	
+    	double distance = 0;
+    	return distance;
+    }
+    
     private void closeResources() {
         try {
             if (input != null) input.close();
