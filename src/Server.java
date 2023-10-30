@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,16 +26,18 @@ public class Server {
     private int ClientId = 0;
     private Semaphore availableDriversSemaphore;
     private BlockingQueue<ConnectionThread> availableDriversQueue;
+    private Map<String, Coordinate> restaurantCoordinates = new ConcurrentHashMap<>();
+    private Coordinate homeCoords;
+    private long startTime;
     
     
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
     	
         Server server = new Server();
         server.start();
     }
     
-    private static List<Order> readOrders(String filename) {
-		//“write a function to read in this csv file....(15 lines) ChatGPT, 27 Sep. version, OpenAI, 27 Sep. 2023, chat.openai.com/chat.
+    private List<Order> readOrders(String filename) throws Exception {
         List<Order> orders = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -43,6 +46,10 @@ public class Server {
                 int readyTime = Integer.parseInt(orderData[0].trim());
                 String restaurant = orderData[1].trim();
                 String foodItem = orderData[2].trim();
+                
+                
+                Coordinate restCoords = YelpAPI.getRestaurantCoordinates(restaurant, homeCoords);     
+                restaurantCoordinates.put(restaurant, restCoords);
                 Order myOrder = new Order(readyTime, restaurant, foodItem);
                 orders.add(myOrder);
             }
@@ -53,6 +60,7 @@ public class Server {
         return orders;
     }
 
+
     
     
     //need to have a ds to keep track of the threads for each connection
@@ -61,7 +69,7 @@ public class Server {
     
     
     
-    public void start() throws InterruptedException {
+    public void start() throws Exception {
     	
     	//USER INPUT STUFFS
     	Scanner scanner = new Scanner(System.in);
@@ -83,7 +91,7 @@ public class Server {
     	//int numDrivers = scanner.nextInt();
     	int numDrivers = 2;
     	Coordinate coords = new Coordinate(myLat, myLong);
-    	
+    	homeCoords = coords;
     	
     	
     	
@@ -109,9 +117,12 @@ public class Server {
                 ClientId += 1;
                 newConnect.start();
                 myConnections.add(newConnect);
+                
                 Message init = new Message("init", coords);
                 newConnect.sendMessage(init);
-
+                Message initMap = new Message("initMap", restaurantCoordinates);
+                newConnect.sendMessage(initMap);
+                
                 System.out.println("Connection from " + clientSocket.getInetAddress());
                 
                 
@@ -121,6 +132,8 @@ public class Server {
                     for (ConnectionThread it : myConnections) {
                         it.sendMessage(startMsg);
                     }
+                    
+                    startTime = System.currentTimeMillis();
                 	break;
                 }
                 else {
@@ -172,14 +185,37 @@ public class Server {
         for (Map.Entry<Integer, List<Order>> entry : ordersByReadyTime.entrySet()) {
             int readyTime = entry.getKey();
             List<Order> readyOrders = entry.getValue();
-
-            try {
-                availableDriversSemaphore.acquire();
-                ConnectionThread driver = availableDriversQueue.take();
-
-                sendOrdersToDriver(readyOrders, driver);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            
+            long currentTime = System.currentTimeMillis();
+            System.out.println("CURRENT: " + currentTime);
+            System.out.println("START: " + startTime); 
+            System.out.println("DIFF: " + (currentTime - startTime));
+            
+            long sleepTime = Math.max(startTime - currentTime, (readyTime * 1000) - (currentTime - startTime));
+            if (sleepTime > 0) {
+                try {
+                    System.out.println("Order not ready or service not started, waiting for " + sleepTime + " milliseconds...");
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            else {
+            	System.out.println("WE GOOD");
+            	System.out.println(currentTime - startTime);
+            	System.out.println(readyTime * 1000);
+            }
+            
+            if (true) {
+	            try {
+	                availableDriversSemaphore.acquire();
+	                ConnectionThread driver = availableDriversQueue.take();
+	                
+	                
+	                sendOrdersToDriver(readyOrders, driver);
+	            } catch (InterruptedException e) {
+	                Thread.currentThread().interrupt();
+	            }
             }
         }
     }
