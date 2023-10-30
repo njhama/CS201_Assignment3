@@ -58,10 +58,17 @@ public class Client {
             	if ("start".equals(test.getType())) {
             		System.out.println("All drivers have arrived!");
             		System.out.println("Starting service.");
+            		System.out.println();
             	}
             	
             	if ("initMap".equals(test.getType())) {
             		restaurantCoordinates = (Map<String, Coordinate>) test.getPayload();
+            	}
+            	
+            	if ("done".equals(test.getType())) {
+            		long timeSinceStart = System.currentTimeMillis() - startTime;
+            		long temp = System.currentTimeMillis() - startTime - TimeZone.getDefault().getRawOffset());
+            		Message weDone = new Message("clientsDone", temp);
             	}
             	
                 if ("order".equals(test.getType())) {
@@ -72,25 +79,17 @@ public class Client {
                 		
                 	}
                 	
-                	//TEMP
-                    long timeSinceStart1 = System.currentTimeMillis() - startTime;
-                    Date elapsedTime1 = new Date(timeSinceStart1 - TimeZone.getDefault().getRawOffset());
-                    //System.out.println(sdf.format(elapsedTime1) + " INIT TIME");
-                    //TEMP
+
                 	
                 	
 	                List<Order> myOrders = (List<Order>) test.getPayload();
 	                for (Order i: myOrders) {
 	                	long timeSinceStart = System.currentTimeMillis() - startTime;
 	                	Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-                        System.out.println(sdf.format(elapsedTime) + " Starting delivery of " + i.getFoodItem() + " from " + i.getRestaurant() + "!");
+                        System.out.println(sdf.format(elapsedTime) + "\nStarting delivery of " + i.getFoodItem() + " from " + i.getRestaurant() + ".");
 	                }
 	                
-	                //TEMP
-                    long timeSinceStart2 = System.currentTimeMillis() - startTime;
-                    Date elapsedTime2 = new Date(timeSinceStart2 - TimeZone.getDefault().getRawOffset());
-                    //System.out.println(sdf.format(elapsedTime2) + " 2 TIME");
-                    //TEMP
+
 	                
 	                while (!myOrders.isEmpty()) {
 	                    Order closestOrder = null;
@@ -98,11 +97,6 @@ public class Client {
 	                    Coordinate closestCoords = null;
 	                    
 	                    
-	                  //TEMP
-	                    long timeSinceStart3 = System.currentTimeMillis() - startTime;
-	                    Date elapsedTime3 = new Date(timeSinceStart3 - TimeZone.getDefault().getRawOffset());
-	                    //System.out.println(sdf.format(elapsedTime3) + " BEFORE API");
-	                    //TEMP
 	                    
 	                    for (Order o : myOrders) {
 	                        Coordinate restaurantCoords = restaurantCoordinates.get(o.getRestaurant());
@@ -114,41 +108,22 @@ public class Client {
 	                        }
 	                    }
 	                    
-	                    
-	                    //TEMP
-	                    long timeSinceStart4 = System.currentTimeMillis() - startTime;
-	                    Date elapsedTime4 = new Date(timeSinceStart4 - TimeZone.getDefault().getRawOffset());
-	                    //System.out.println(sdf.format(elapsedTime4) + " AFTER API");
-	                    //TEMP
+	
 	                    
 	                    if (closestOrder != null) {
 	                        long timeSinceStart = System.currentTimeMillis() - startTime;
 	                        Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-	                        //System.out.println(sdf.format(elapsedTime) + " Starting delivery of " + closestOrder.getFoodItem() + " from " + closestOrder.getRestaurant() + "!");
-	                        //System.out.println("CURR: 	" + currCoords.getLatitude() + ", " + currCoords.getLongitude());
+
 	                        currCoords = closestCoords;
 	                        myOrders.remove(closestOrder);
 
 	                        
-	                        //System.out.println("CLOSEST: " + closestCoords.getLatitude() + ", " + closestCoords.getLongitude());
-	                        //System.out.println("SLEEPIONG FOR : " + closestDistance * 1000);
-	                        
-	                        //TEMP
-	                        timeSinceStart = System.currentTimeMillis() - startTime;
-	                        elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-	                        //System.out.println(sdf.format(elapsedTime) + " CURRENT TIME");
-	                        //TEMP
-	                        
 	                        Thread.sleep((long) (closestDistance * 1000));
-	                        //TEMP
-	                        timeSinceStart = System.currentTimeMillis() - startTime;
-	                        elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-	                        //System.out.println(sdf.format(elapsedTime) + " CURRENT TIME");
-	                        //TEMP
+
 	                        
 	                        timeSinceStart = System.currentTimeMillis() - startTime;
 	                        elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-	                        System.out.println(sdf.format(elapsedTime) + " Finished delivery of " + closestOrder.getFoodItem() + " to " + closestOrder.getRestaurant() + ".");
+	                        System.out.println(sdf.format(elapsedTime) + "\nFinished delivery of " + closestOrder.getFoodItem() + " to " + closestOrder.getRestaurant() + ".");
 	                        
 	                        
 	                    } else {
@@ -158,7 +133,7 @@ public class Client {
 	                }
 	                long timeSinceStart = System.currentTimeMillis() - startTime;
                     Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-                    System.out.println(sdf.format(elapsedTime) + " Finished all deliveries, returning back to HQ.");
+                    System.out.println(sdf.format(elapsedTime) + "\nFinished all deliveries, returning back to HQ.");
 	                //System.out.println("Finished all deliveries, returning back to HQ.");
 	              
 	                double distance = calcDistance(currCoords, homeCoords);
@@ -166,7 +141,7 @@ public class Client {
 	                currCoords = homeCoords;
 	                timeSinceStart = System.currentTimeMillis() - startTime;
                     elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-                    System.out.println(sdf.format(elapsedTime) + " Returned to HQ.");
+                    System.out.println(sdf.format(elapsedTime) + "\nReturned to HQ.");
                 	Message done = new Message("freed", "smth");
                 	output.writeObject(done);
                 	output.flush();

@@ -37,6 +37,8 @@ public class ConnectionThread extends Thread{
                 if ("freed".equals(receivedMessage.getType())) {
                 	server.releaseDriver(this);
                 }
+                
+               
             }
             
         } catch (IOException e) {

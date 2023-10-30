@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TimeZone;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -182,7 +185,7 @@ public class Server {
     }
     
     //funtion to handle order proessing
-    private void processOrders(List<Order> orders) {
+    private void processOrders(List<Order> orders) throws InterruptedException {
         Map<Integer, List<Order>> ordersByReadyTime = orders.stream()
                 .collect(Collectors.groupingBy(Order::getReadyTime));
 
@@ -206,8 +209,7 @@ public class Server {
             }
             else {
             	System.out.println("WE GOOD");
-            	System.out.println(currentTime - startTime);
-            	System.out.println(readyTime * 1000);
+ 
             }
             
             if (true) {
@@ -222,6 +224,18 @@ public class Server {
 	            }
             }
         }
+        
+        System.out.println();
+        SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss:SSS]");
+        long timeSinceStart = System.currentTimeMillis() - startTime;
+        Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
+        System.out.println(sdf.format(elapsedTime) + "\nWE DONE!!!)");
+        
+        Message doneMSG = new Message("done", "void");
+        for (ConnectionThread i: myConnections) {
+        	i.sendMessage(doneMSG);
+        }
+        
     }
 
     private void sendOrdersToDriver(List<Order> orders, ConnectionThread driver) throws InterruptedException {
