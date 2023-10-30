@@ -11,11 +11,12 @@ public class ConnectionThread extends Thread{
     ObjectInputStream in;
     ObjectOutputStream out;
     private final CountDownLatch latch = new CountDownLatch(1);
+    private Server server;
 
-    public ConnectionThread(Socket socket, int ClientID) {
+    public ConnectionThread(Socket socket, int ClientID, Server server) {
         this.socket = socket;
         this.ClientId = ClientID;
-
+        this.server = server;
     }
 
     @Override
@@ -30,7 +31,12 @@ public class ConnectionThread extends Thread{
                 Message receivedMessage = (Message) in.readObject();
                 // Process the received message if necessary...
                 // For now, we're just printing it
-                System.out.println("Received from Client " + ClientId + ": " + receivedMessage);
+                //System.out.println("Received from Client " + ClientId + ": " + receivedMessage);
+            
+                //check if we need to release the driver
+                if ("freed".equals(receivedMessage.getType())) {
+                	server.releaseDriver(this);
+                }
             }
             
         } catch (IOException e) {

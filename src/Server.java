@@ -70,8 +70,8 @@ public class Server {
     	
     	//temp
     	String fileName = "schedule.csv";
-    	Double myLat = 1.0;
-    	Double myLong = 1.0;
+    	Double myLat = 34.02116;
+    	Double myLong = -118.287132;
     	
     	
     	System.out.println("What is your latitude?");
@@ -81,8 +81,8 @@ public class Server {
     	
     	System.out.println("How many drivers will be in service today?");
     	//int numDrivers = scanner.nextInt();
-    	int numDrivers = 1;
-    	
+    	int numDrivers = 2;
+    	Coordinate coords = new Coordinate(myLat, myLong);
     	
     	
     	
@@ -105,18 +105,19 @@ public class Server {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 //CountDownLatch latch = new CountDownLatch(1);  // Create a new latch for each connection
-                ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId);
+                ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId, this);
                 ClientId += 1;
                 newConnect.start();
                 myConnections.add(newConnect);
-                
+                Message init = new Message("init", coords);
+                newConnect.sendMessage(init);
 
                 System.out.println("Connection from " + clientSocket.getInetAddress());
                 
                 
                 if (myConnections.size() == numDrivers) {
                 	System.out.println("Starting service");
-                	Message startMsg = new Message("FROM SERVER: Service Starting", "All drivers are connected. Service is now starting.");
+                	Message startMsg = new Message("start", "All drivers are connected. Service is now starting.");
                     for (ConnectionThread it : myConnections) {
                         it.sendMessage(startMsg);
                     }
@@ -191,7 +192,11 @@ public class Server {
     }
 
     
-    
+    public void releaseDriver(ConnectionThread driver ) {
+    	availableDriversQueue.add(driver);
+        availableDriversSemaphore.release();
+        System.out.println("Driver  is now available");
+    }
     
     
     //close everything
