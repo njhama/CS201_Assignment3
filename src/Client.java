@@ -55,6 +55,11 @@ public class Client {
             		currCoords = homeCoords;
             	}
             	
+            	if ("start".equals(test.getType())) {
+            		System.out.println("All drivers have arrived!");
+            		System.out.println("Starting service.");
+            	}
+            	
             	if ("initMap".equals(test.getType())) {
             		restaurantCoordinates = (Map<String, Coordinate>) test.getPayload();
             	}
@@ -64,6 +69,7 @@ public class Client {
                 	if (first) {
                 		startTime = System.currentTimeMillis();
                 		first = false;
+                		
                 	}
                 	
                 	//TEMP
@@ -142,7 +148,7 @@ public class Client {
 	                        
 	                        timeSinceStart = System.currentTimeMillis() - startTime;
 	                        elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-	                        System.out.println(sdf.format(elapsedTime) + " Did delivery of " + closestOrder.getFoodItem() + " from " + closestOrder.getRestaurant() + "!");
+	                        System.out.println(sdf.format(elapsedTime) + " Finished delivery of " + closestOrder.getFoodItem() + " to " + closestOrder.getRestaurant() + ".");
 	                        
 	                        
 	                    } else {
@@ -150,15 +156,17 @@ public class Client {
 	                        break;
 	                    }
 	                }
-	                
-	                System.out.println("WE ARE GOING BACK TO HQ");
+	                long timeSinceStart = System.currentTimeMillis() - startTime;
+                    Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
+                    System.out.println(sdf.format(elapsedTime) + " Finished all deliveries, returning back to HQ.");
+	                //System.out.println("Finished all deliveries, returning back to HQ.");
 	              
 	                double distance = calcDistance(currCoords, homeCoords);
 	                Thread.sleep((long) (distance * 1000));
 	                currCoords = homeCoords;
-	                long timeSinceStart = System.currentTimeMillis() - startTime;
-                    Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-                    System.out.println(sdf.format(elapsedTime) + "Returned to HQ.");
+	                timeSinceStart = System.currentTimeMillis() - startTime;
+                    elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
+                    System.out.println(sdf.format(elapsedTime) + " Returned to HQ.");
                 	Message done = new Message("freed", "smth");
                 	output.writeObject(done);
                 	output.flush();

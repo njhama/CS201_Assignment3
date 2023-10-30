@@ -153,6 +153,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+        	System.out.println("We DONE");
             //shutdown();
         }
         
@@ -171,6 +172,9 @@ public class Server {
         	//start doing the processing
         	
         	//should send some sort of lists to 
+        	
+        	
+        	//call smth to break out
         	
         	
         	
