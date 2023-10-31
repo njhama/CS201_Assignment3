@@ -45,6 +45,8 @@ public class Server {
         server.start();
     }
     
+    
+    //“write funtion to read this csv files ... have it return a list of orders ...(20 lines). ChatGPT, 30 Oct. version, OpenAI, 30 Oct. 2023, chat.openai.com/chat.
     private List<Order> readOrders(String filename) throws Exception {
         List<Order> orders = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
@@ -115,6 +117,7 @@ public class Server {
                 Message initMap = new Message("initMap", restaurantCoordinates);
                 newConnect.sendMessage(initMap);
                 
+              //“how to print the socket connection ip ...(1 lines). ChatGPT, 30 Oct. version, OpenAI, 30 Oct. 2023, chat.openai.com/chat.
                 System.out.println("Connection from " + clientSocket.getInetAddress().getHostAddress());
 
                 
@@ -203,7 +206,7 @@ public class Server {
         }
         
         System.out.println();
-        //SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss:SSS]");
+      //“print out time since the start ...(3 lines). ChatGPT, 30 Oct. version, OpenAI, 30 Oct. 2023, chat.openai.com/chat.
         long timeSinceStart = System.currentTimeMillis() - startTime;
         Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
         System.out.println("All orders completed!");
@@ -238,6 +241,7 @@ public class Server {
     }
         
     //close everything
+  //“write funtion to propperly close and end everything at end of runtime ...(10 lines). ChatGPT, 30 Oct. version, OpenAI, 30 Oct. 2023, chat.openai.com/chat.
     public void shutdown() {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {

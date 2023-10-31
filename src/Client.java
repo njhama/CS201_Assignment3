@@ -169,20 +169,10 @@ public class Client {
                 	
                 	
                 }
-
-                	
-                	
-                	
-                	
-                	
+         	
                 	
                 }
                 
-        	
-                
-            
-            
-            
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -193,7 +183,7 @@ public class Client {
         
     }
     
-    //calc how long to sleep for
+    //calc how long to sleep for -0 i got this from my old code fyi
     public double calcDistance(Coordinate coord1, Coordinate coord2) {
         double lat1Radians = Math.toRadians(coord1.getLatitude());
         double long1Radians = Math.toRadians(coord1.getLongitude());
@@ -206,6 +196,8 @@ public class Client {
     }
 
     
+    
+  //“write funtion close all resources ...(7 lines). ChatGPT, 30 Oct. version, OpenAI, 30 Oct. 2023, chat.openai.com/chat.
     private void closeResources() {
         try {
             if (input != null) input.close();
@@ -219,5 +211,3 @@ public class Client {
 
 
 
-//there is no definite sequence of read and writes
-//should i have a unique identifier forteh object sends to handle?
