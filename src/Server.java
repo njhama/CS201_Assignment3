@@ -88,8 +88,9 @@ public class Server {
     	Double myLong = scanner.nextDouble();
     	
     	System.out.println("How many drivers will be in service today?");
-    	int numDrivers = scanner.nextInt();
- 
+    	int numDrivers2 = scanner.nextInt();
+    	numDrivers = numDrivers2;
+    	//System.out.println(numDrivers);
     	currDrivers = numDrivers;
     	Coordinate coords = new Coordinate(myLat, myLong);
     	homeCoords = coords;
@@ -153,25 +154,25 @@ public class Server {
       //init
     	availableDriversSemaphore = new Semaphore(numDrivers);
         availableDriversQueue = new LinkedBlockingQueue<>(myConnections);
-        processOrders(myOrders);
-        while (true) {
-      	
-        }
+        //System.out.println("A " + numDrivers);
+        processOrders(myOrders);      
     }
     
-    //funtion to handle order proessing
+
     private void processOrders(List<Order> orders) throws InterruptedException {
-    	int totalDrivers = availableDriversSemaphore.availablePermits();
-        latch = new CountDownLatch(totalDrivers);
+    	//System.out.println("A2 " + numDrivers);
+    	
+        //latch = new CountDownLatch(totalDrivers);
     	
     	
         Map<Integer, List<Order>> ordersByReadyTime = orders.stream()
                 .collect(Collectors.groupingBy(Order::getReadyTime));
 
         for (Map.Entry<Integer, List<Order>> entry : ordersByReadyTime.entrySet()) {
+        	
             int readyTime = entry.getKey();
             List<Order> readyOrders = entry.getValue();
-            
+            //System.out.println("A1 " + numDrivers);
             long currentTime = System.currentTimeMillis();
       
             
@@ -201,7 +202,10 @@ public class Server {
         
         
         //wait for the drivers to return
+        //System.out.println("CURR " + currDrivers);
+        //System.out.println(numDrivers);
         while (currDrivers != numDrivers) {
+        	//System.out.println(" WE SLEEPING");
         	Thread.sleep(1);
         }
         
@@ -215,7 +219,7 @@ public class Server {
         for (ConnectionThread i: myConnections) {
         	i.sendMessage(doneMSG);
         }
-        shutdown();
+        //shutdown();
         
     }
     
