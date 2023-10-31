@@ -32,12 +32,12 @@ public class Client {
 	public void run() throws Exception {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to JoesTable v2.0!");
-        System.out.println("Enter the server hostname: ");
-        //String hostname = scanner.nextLine();
-        String hostname = "localhost";
+        System.out.print("Enter the server hostname: ");
+        String hostname = scanner.nextLine();
+      
         System.out.print("Enter the server port: ");
-        //int port = scanner.nextInt();
-        int port = 3456;
+        int port = scanner.nextInt();
+        
         System.out.println();
         //scanner.nextLine();  // Consume the newline
         SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss:SSS]");

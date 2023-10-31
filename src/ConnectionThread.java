@@ -29,11 +29,7 @@ public class ConnectionThread extends Thread{
             latch.countDown();
             while (true) {
                 Message receivedMessage = (Message) in.readObject();
-                // Process the received message if necessary...
-                // For now, we're just printing it
-                //System.out.println("Received from Client " + ClientId + ": " + receivedMessage);
-            
-                //check if we need to release the driver
+   
                 if ("freed".equals(receivedMessage.getType())) {
                 	server.releaseDriver(this);
                 }
@@ -41,17 +37,15 @@ public class ConnectionThread extends Thread{
                 if ("done".equals(receivedMessage.getType())) {
                 	server.finishedProcess(this);
                 }
-                
-               
+     
             }
             
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-              // Signal that initialization is complete
+
         }
     }
 
@@ -61,9 +55,8 @@ public class ConnectionThread extends Thread{
             if (out != null) {
                 out.writeObject(message);
                 out.flush();  
-                //System.out.println("Message Sent To Client " + ClientId);
-            } else {
-                //jank
+            } 
+            else {
                 System.out.println("Something went extraordinarily wrong from client " + ClientId );
             }
         } catch (IOException e) {

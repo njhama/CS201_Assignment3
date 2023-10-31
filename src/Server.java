@@ -80,40 +80,31 @@ public class Server {
 			 fileName = scanner.nextLine();
 		}
     	
-    	Double myLat = 34.02116;
-    	Double myLong = -118.287132;
-    	
-    	
     	System.out.println("What is your latitude?");
-    	//Double myLat = scanner.nextDouble();
+    	Double myLat = scanner.nextDouble();
     	System.out.println("What is your longitude?");
-    	//Double myLong = scanner.nextDouble();
+    	Double myLong = scanner.nextDouble();
     	
     	System.out.println("How many drivers will be in service today?");
-    	//int numDrivers = scanner.nextInt();
-    	numDrivers = 2;
+    	int numDrivers = scanner.nextInt();
+ 
     	currDrivers = numDrivers;
     	Coordinate coords = new Coordinate(myLat, myLong);
     	homeCoords = coords;
     	
-    	
-    	
-    	
-    	//read thru the file
+
     	List<Order> myOrders = readOrders(fileName);
     	
-    	
-    	
+
         try {
             serverSocket = new ServerSocket(PORT);
-            executorService = Executors.newFixedThreadPool(numDrivers);  // Adjust the thread pool size as needed
+            executorService = Executors.newFixedThreadPool(numDrivers);  
             System.out.println("Listening on port " + PORT);
             InetAddress inetAddress = InetAddress.getLocalHost();
             System.out.println("Waiting for drivers...");
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                //CountDownLatch latch = new CountDownLatch(1);  // Create a new latch for each connection
                 ConnectionThread newConnect = new ConnectionThread(clientSocket, ClientId, this);
                 ClientId += 1;
                 newConnect.start();
@@ -135,8 +126,7 @@ public class Server {
                         it.sendMessage(startMsg);
                     }
                     
-                    
-                    
+   
                     startTime = System.currentTimeMillis();
                 	break;
                 }
@@ -239,16 +229,14 @@ public class Server {
         availableDriversQueue.put(driver);  // Put the driver back in the queue when done
         
     }
-
-    
+ 
     public void releaseDriver(ConnectionThread driver ) {
     	currDrivers += 1;
     	availableDriversQueue.add(driver);
         availableDriversSemaphore.release();
         
     }
-    
-    
+        
     //close everything
     public void shutdown() {
         try {
