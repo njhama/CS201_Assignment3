@@ -38,6 +38,10 @@ public class ConnectionThread extends Thread{
                 	server.releaseDriver(this);
                 }
                 
+                if ("done".equals(receivedMessage.getType())) {
+                	server.finishedProcess(this);
+                }
+                
                
             }
             
@@ -57,7 +61,7 @@ public class ConnectionThread extends Thread{
             if (out != null) {
                 out.writeObject(message);
                 out.flush();  
-                System.out.println("Message Sent To Client " + ClientId);
+                //System.out.println("Message Sent To Client " + ClientId);
             } else {
                 //jank
                 System.out.println("Something went extraordinarily wrong from client " + ClientId );

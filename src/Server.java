@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,10 +33,14 @@ public class Server {
     private Map<String, Coordinate> restaurantCoordinates = new ConcurrentHashMap<>();
     private Coordinate homeCoords;
     private long startTime;
-    
+    SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss:SSS]");
+    private boolean first;
+    private int numDrivers;
+    int[] counter = {0};
+    CountDownLatch latch;
+    private int currDrivers;
     
     public static void main(String[] args) throws Exception {
-    	
         Server server = new Server();
         server.start();
     }
@@ -49,38 +54,32 @@ public class Server {
                 int readyTime = Integer.parseInt(orderData[0].trim());
                 String restaurant = orderData[1].trim();
                 String foodItem = orderData[2].trim();
-                
-                
-                Coordinate restCoords = YelpAPI.getRestaurantCoordinates(restaurant, homeCoords);     
-                restaurantCoordinates.put(restaurant, restCoords);
+                if (!restaurantCoordinates.containsKey(restaurant)) {
+                    Coordinate restCoords = YelpAPI.getRestaurantCoordinates(restaurant, homeCoords);
+                    restaurantCoordinates.put(restaurant, restCoords);
+                }
+
                 Order myOrder = new Order(readyTime, restaurant, foodItem);
                 orders.add(myOrder);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return orders;
     }
 
 
-    
-    
-    //need to have a ds to keep track of the threads for each connection
-    //iterate thru the restaurants and make a new ConnectionThread for each one
-    //keep track of how many clients have join and send things to those clinets 
-    
-    
-    
+
     public void start() throws Exception {
-    	
-    	//USER INPUT STUFFS
     	Scanner scanner = new Scanner(System.in);
     	System.out.println("What is the name of the schedule file?");
-    	//String fileName = scanner.nextLine();
+    	String fileName = scanner.nextLine();
+    	while (!new File(fileName).exists()) {
+			System.out.println();
+			System.out.println("That file does not exists. What is the name of the schedule file? ");
+			 fileName = scanner.nextLine();
+		}
     	
-    	//temp
-    	String fileName = "schedule.csv";
     	Double myLat = 34.02116;
     	Double myLong = -118.287132;
     	
@@ -92,7 +91,8 @@ public class Server {
     	
     	System.out.println("How many drivers will be in service today?");
     	//int numDrivers = scanner.nextInt();
-    	int numDrivers = 2;
+    	numDrivers = 2;
+    	currDrivers = numDrivers;
     	Coordinate coords = new Coordinate(myLat, myLong);
     	homeCoords = coords;
     	
@@ -101,17 +101,15 @@ public class Server {
     	
     	//read thru the file
     	List<Order> myOrders = readOrders(fileName);
-    	for (Order it : myOrders) {
-    		System.out.println(it.getReadyTime());
-    	}
+    	
     	
     	
         try {
             serverSocket = new ServerSocket(PORT);
-            executorService = Executors.newFixedThreadPool(10);  // Adjust the thread pool size as needed
-            System.out.println("Server listening on port " + PORT);
+            executorService = Executors.newFixedThreadPool(numDrivers);  // Adjust the thread pool size as needed
+            System.out.println("Listening on port " + PORT);
             InetAddress inetAddress = InetAddress.getLocalHost();
-            System.out.println("Host Name: " + inetAddress.getHostName());
+            System.out.println("Waiting for drivers...");
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
@@ -126,26 +124,25 @@ public class Server {
                 Message initMap = new Message("initMap", restaurantCoordinates);
                 newConnect.sendMessage(initMap);
                 
-                System.out.println("Connection from " + clientSocket.getInetAddress());
+                System.out.println("Connection from " + clientSocket.getInetAddress().getHostAddress());
+
                 
                 
                 if (myConnections.size() == numDrivers) {
-                	System.out.println("Starting service");
+                	System.out.println("Starting service.");
                 	Message startMsg = new Message("start", "All drivers are connected. Service is now starting.");
                     for (ConnectionThread it : myConnections) {
                         it.sendMessage(startMsg);
                     }
+                    
+                    
                     
                     startTime = System.currentTimeMillis();
                 	break;
                 }
                 else {
                 	int remainingDrivers = numDrivers - myConnections.size();
-                    Message waitMsg = new Message("Awaiting More Drivers", remainingDrivers + " more driver is\r\n"
-                    		+ "needed before the\r\n"
-                    		+ "service can begin.\r\n"
-                    		+ "Waiting...\r\n"
-                    		+ "");
+                    Message waitMsg = new Message("waitMsg", remainingDrivers + " more driver is needed before the service can begin.\n" + "Waiting...");
                     for (ConnectionThread it : myConnections) {
                         it.sendMessage(waitMsg);
                     }
@@ -156,8 +153,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-        	System.out.println("We DONE");
-            //shutdown();
+
         }
         
         
@@ -166,26 +162,16 @@ public class Server {
         availableDriversQueue = new LinkedBlockingQueue<>(myConnections);
         processOrders(myOrders);
         while (true) {
-        	//send something to the drivers so thhey can start
-        	//start processing orders
-        	
-        	
-        	//send message with payload of min heap of orders, client should do in order
-        	//we have myOrders
-        	//start doing the processing
-        	
-        	//should send some sort of lists to 
-        	
-        	
-        	//call smth to break out
-        	
-        	
-        	
+      	
         }
     }
     
     //funtion to handle order proessing
     private void processOrders(List<Order> orders) throws InterruptedException {
+    	int totalDrivers = availableDriversSemaphore.availablePermits();
+        latch = new CountDownLatch(totalDrivers);
+    	
+    	
         Map<Integer, List<Order>> ordersByReadyTime = orders.stream()
                 .collect(Collectors.groupingBy(Order::getReadyTime));
 
@@ -194,23 +180,18 @@ public class Server {
             List<Order> readyOrders = entry.getValue();
             
             long currentTime = System.currentTimeMillis();
-            System.out.println("CURRENT: " + currentTime);
-            System.out.println("START: " + startTime); 
-            System.out.println("DIFF: " + (currentTime - startTime));
+      
             
             long sleepTime = Math.max(startTime - currentTime, (readyTime * 1000) - (currentTime - startTime));
             if (sleepTime > 0) {
                 try {
-                    System.out.println("Order not ready or service not started, waiting for " + sleepTime + " milliseconds...");
+                    
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
-            else {
-            	System.out.println("WE GOOD");
- 
-            }
+       
             
             if (true) {
 	            try {
@@ -218,41 +199,53 @@ public class Server {
 	                ConnectionThread driver = availableDriversQueue.take();
 	                
 	                
-	                sendOrdersToDriver(readyOrders, driver);
+	                sendOrdersToDriver(readyOrders, driver, latch);
 	            } catch (InterruptedException e) {
 	                Thread.currentThread().interrupt();
 	            }
             }
         }
         
+        
+        //wait for the drivers to return
+        while (currDrivers != numDrivers) {
+        	Thread.sleep(1);
+        }
+        
         System.out.println();
-        SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss:SSS]");
+        //SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss:SSS]");
         long timeSinceStart = System.currentTimeMillis() - startTime;
         Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
-        System.out.println(sdf.format(elapsedTime) + "\nWE DONE!!!)");
+        System.out.println("All orders completed!");
         
-        Message doneMSG = new Message("done", "void");
+        Message doneMSG = new Message("done", elapsedTime);
         for (ConnectionThread i: myConnections) {
         	i.sendMessage(doneMSG);
         }
+        shutdown();
         
     }
     
     
-    
+    public void finishedProcess(ConnectionThread driver) {
+    	latch.countDown();
+    }
 
-    private void sendOrdersToDriver(List<Order> orders, ConnectionThread driver) throws InterruptedException {
+    private void sendOrdersToDriver(List<Order> orders, ConnectionThread driver, CountDownLatch  latch) throws InterruptedException {
+    	currDrivers -= 1;
         Message orderMessage = new Message("order", orders);
-        System.out.println("SENDING MESSAGE FROM " + orderMessage.getType());
+        
         driver.sendMessage(orderMessage);
         availableDriversQueue.put(driver);  // Put the driver back in the queue when done
+        
     }
 
     
     public void releaseDriver(ConnectionThread driver ) {
+    	currDrivers += 1;
     	availableDriversQueue.add(driver);
         availableDriversSemaphore.release();
-        System.out.println("Driver  is now available");
+        
     }
     
     

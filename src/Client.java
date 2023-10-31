@@ -28,15 +28,17 @@ public class Client {
     
    
 
-    public void run() throws Exception {
+    @SuppressWarnings("unused")
+	public void run() throws Exception {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Welcome to the program!");
-        System.out.print("Enter the server hostname: ");
+        System.out.println("Welcome to JoesTable v2.0!");
+        System.out.println("Enter the server hostname: ");
         //String hostname = scanner.nextLine();
         String hostname = "localhost";
         System.out.print("Enter the server port: ");
         //int port = scanner.nextInt();
         int port = 3456;
+        System.out.println();
         //scanner.nextLine();  // Consume the newline
         SimpleDateFormat sdf = new SimpleDateFormat("[HH:mm:ss:SSS]");
         sdf.setTimeZone(TimeZone.getTimeZone("PST"));
@@ -45,14 +47,18 @@ public class Client {
             output = new ObjectOutputStream(socket.getOutputStream());
             output.flush();
             input = new ObjectInputStream(socket.getInputStream());
-            System.out.println("Connected to server: " + socket.getRemoteSocketAddress());
-            
+            //System.out.println("Connected to server: " + socket.getRemoteSocketAddress());
+            System.out.println();
             while (true) {
             	Message test = (Message) input.readObject();
             	
             	if ("init".equals(test.getType())) {
             		homeCoords = (Coordinate) test.getPayload();
             		currCoords = homeCoords;
+            	}
+            	
+            	if ("waitMsg".equals(test.getType())) {
+            		 System.out.println(test.getPayload());
             	}
             	
             	if ("start".equals(test.getType())) {
@@ -66,9 +72,7 @@ public class Client {
             	}
             	
             	if ("done".equals(test.getType())) {
-            		long timeSinceStart = System.currentTimeMillis() - startTime;
-            		long temp = System.currentTimeMillis() - startTime - TimeZone.getDefault().getRawOffset());
-            		Message weDone = new Message("clientsDone", temp);
+            		System.out.println(sdf.format(test.getPayload()) + "\nAll orders completed!");
             	}
             	
                 if ("order".equals(test.getType())) {
@@ -90,15 +94,17 @@ public class Client {
 	                }
 	                
 
-	                
+	                String prev = null;
 	                while (!myOrders.isEmpty()) {
 	                    Order closestOrder = null;
 	                    double closestDistance = Double.MAX_VALUE;
 	                    Coordinate closestCoords = null;
+	                    //String prev = null;
 	                    
 	                    
-	                    
-	                    for (Order o : myOrders) {
+	                    for (int i = 0; i < myOrders.size(); i++) {
+	                    	
+	                        Order o = myOrders.get(i);
 	                        Coordinate restaurantCoords = restaurantCoordinates.get(o.getRestaurant());
 	                        double distance = calcDistance(currCoords, restaurantCoords);
 	                        if (distance < closestDistance) {
@@ -111,6 +117,14 @@ public class Client {
 	
 	                    
 	                    if (closestOrder != null) {
+	                    	if (prev != null) {
+	                    		if (!(prev.equals(closestOrder.getRestaurant()))) {
+		                    		long timeSinceStart = System.currentTimeMillis() - startTime;
+			                        Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
+		                    		System.out.println(sdf.format(elapsedTime) + "\nContuing delivery to " + closestOrder.getRestaurant());
+		                    	}
+	                    	}
+	                    	
 	                        long timeSinceStart = System.currentTimeMillis() - startTime;
 	                        Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
 
@@ -125,12 +139,19 @@ public class Client {
 	                        elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
 	                        System.out.println(sdf.format(elapsedTime) + "\nFinished delivery of " + closestOrder.getFoodItem() + " to " + closestOrder.getRestaurant() + ".");
 	                        
+	                        //CHECK IF THE NEXT  O
+	                        prev = closestOrder.getRestaurant();
+	                        
 	                        
 	                    } else {
 	                        System.out.println("Failed to find the closest restaurant.");
 	                        break;
 	                    }
 	                }
+	                
+	                
+	                
+	                
 	                long timeSinceStart = System.currentTimeMillis() - startTime;
                     Date elapsedTime = new Date(timeSinceStart - TimeZone.getDefault().getRawOffset());
                     System.out.println(sdf.format(elapsedTime) + "\nFinished all deliveries, returning back to HQ.");
@@ -145,6 +166,8 @@ public class Client {
                 	Message done = new Message("freed", "smth");
                 	output.writeObject(done);
                 	output.flush();
+                	
+                	
                 }
 
                 	
